@@ -19,7 +19,6 @@ const stageStatus = $('stage-status');
 const ratioSelect = $('ratio-select');
 
 const textContentEl = $('text-content');
-const testTextBtn   = $('test-text-btn');
 const textXEl   = $('text-x');
 const textYEl   = $('text-y');
 const textSizeEl= $('text-size');
@@ -68,7 +67,6 @@ const RATIOS = {
   '5:4':  { w: 1350, h: 1080 },
 };
 
-const TEST_TEXT = '가장자리까지 꽉 채우는 아주 긴 검사 문구를 넣어서 줄바꿈이 잘 되는지 확인합니다';
 
 // ---------- 상태 ----------
 const state = {
@@ -130,7 +128,11 @@ async function handleFile(file) {
     state.image = img;
     dropzoneLabel.innerHTML = `${escapeHtml(file.name)}<br><small>다른 이미지를 넣으면 교체돼요</small>`;
     stageStatus.textContent = `${type.toUpperCase()} 이미지 불러옴 · 원본 ${img.naturalWidth}×${img.naturalHeight}px`;
-    draw();
+    if (state.ratio === 'original') {
+      applyRatio('original'); // 새로 불러온 이미지의 실제 비율로 캔버스를 다시 맞춘다
+    } else {
+      draw();
+    }
     URL.revokeObjectURL(blobUrl);
   };
   img.onerror = () => {
@@ -170,22 +172,46 @@ dropzone.addEventListener('drop', (e) => {
 });
 
 // ---------- 화면비 컨트롤 ----------
+// 헤더 높이·패널 길이 등 실제 레이아웃을 그때그때 측정해서 계산한다.
+// (고정 비율로 어림잡으면 화면이 작거나 패널이 길어졌을 때 사진이 잘릴 수 있음)
 function fitStageFrameToRatio(rw, rh) {
-  const boundW = Math.min(window.innerWidth * 0.6, 560);
-  const boundH = Math.min(window.innerHeight * 0.62, 680);
-  let w = boundW;
+  const stageEl = document.querySelector('.stage');
+  const rect = stageEl.getBoundingClientRect();
+  const PADDING_H = 48; // .stage 좌우 패딩(24px×2)
+  const PADDING_TOP = 24; // .stage 상단 패딩
+  const RESERVE_BELOW = 64; // 미리보기 아래 상태 문구 + 여백 몫으로 남겨둘 공간
+  const availW = Math.max(180, stageEl.clientWidth - PADDING_H);
+  const availH = Math.max(180, window.innerHeight - (rect.top + PADDING_TOP) - RESERVE_BELOW);
+
+  let w = availW;
   let h = w * (rh / rw);
-  if (h > boundH) {
-    h = boundH;
+  if (h > availH) {
+    h = availH;
     w = h * (rw / rh);
   }
   stageFrame.style.width = `${w}px`;
   stageFrame.style.height = `${h}px`;
 }
 
+// '원본 비율 그대로'는 고정 크기표가 아니라 불러온 이미지의 실제 가로세로 비율을 그대로 쓴다.
+function computeCanvasDims(key, img) {
+  if (key === 'original') {
+    if (img) {
+      const maxDim = 1400; // 캔버스가 지나치게 커지지 않도록 상한
+      const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+      return {
+        w: Math.max(1, Math.round(img.naturalWidth * scale)),
+        h: Math.max(1, Math.round(img.naturalHeight * scale)),
+      };
+    }
+    return { w: 1080, h: 1080 }; // 이미지 불러오기 전 기본값
+  }
+  return RATIOS[key] || RATIOS['1:1'];
+}
+
 function applyRatio(key) {
   state.ratio = key;
-  const { w, h } = RATIOS[key];
+  const { w, h } = computeCanvasDims(key, state.image);
   canvas.width = w;
   canvas.height = h;
   fitStageFrameToRatio(w, h);
@@ -194,8 +220,7 @@ function applyRatio(key) {
 
 ratioSelect.addEventListener('change', () => applyRatio(ratioSelect.value));
 window.addEventListener('resize', () => {
-  const { w, h } = RATIOS[state.ratio];
-  fitStageFrameToRatio(w, h);
+  fitStageFrameToRatio(canvas.width, canvas.height);
 });
 
 // ---------- 문구 컨트롤 ----------
@@ -206,11 +231,6 @@ textEnabledEl.addEventListener('change', () => {
 });
 textContentEl.addEventListener('input', () => {
   state.text.content = textContentEl.value;
-  draw();
-});
-testTextBtn.addEventListener('click', () => {
-  textContentEl.value = TEST_TEXT;
-  state.text.content = TEST_TEXT;
   draw();
 });
 textXEl.addEventListener('input', () => {
@@ -728,18 +748,22 @@ function applyTemplateData(data) {
   state.text = { ...state.text, ...data.text };
   state.blur = { ...state.blur, ...data.blur };
 
-  const { w, h } = RATIOS[state.ratio];
-  canvas.width = w;
-  canvas.height = h;
-  fitStageFrameToRatio(w, h);
+  const sizeCanvasTo = (img) => {
+    const { w, h } = computeCanvasDims(state.ratio, img);
+    canvas.width = w;
+    canvas.height = h;
+    fitStageFrameToRatio(w, h);
+  };
+
   syncControlsFromState();
 
   if (data.imageDataUrl) {
     const img = new Image();
-    img.onload = () => { state.image = img; draw(); };
+    img.onload = () => { state.image = img; sizeCanvasTo(img); draw(); };
     img.src = data.imageDataUrl;
   } else {
     state.image = null;
+    sizeCanvasTo(null);
     draw();
   }
 }
@@ -1008,5 +1032,6 @@ importJsonInput.addEventListener('change', async (e) => {
 });
 
 // ---------- 초기화 ----------
-applyRatio('1:1');
+ratioSelect.value = 'original';
+applyRatio('original');
 renderTemplateList();

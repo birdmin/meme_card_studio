@@ -33,6 +33,7 @@
         <label class="field">
           <span>내보낼 비율</span>
           <select id="ratio-select">
+            <option value="original">원본 비율 그대로 (자르지 않음)</option>
             <option value="1:1">1:1 · 정사각형</option>
             <option value="4:5">4:5 · 세로</option>
             <option value="9:16">9:16 · 스토리</option>
@@ -100,7 +101,6 @@
             <span>내용 (Enter로 줄바꿈 가능)</span>
             <textarea id="text-content" rows="2" maxlength="120">여기에 문구를 입력</textarea>
           </label>
-          <button type="button" class="ghost-btn" id="test-text-btn">가장자리·줄바꿈 검사 문구 넣기</button>
 
           <label class="field">
             <span>가로 위치 <b id="x-value">50</b>%</span>
