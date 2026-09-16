@@ -1,0 +1,28 @@
+{
+  "exportedAt": 1730000000000,
+  "exportedFrom": "짤·카드 스튜디오",
+  "templates": [
+    {
+      "id": "t_sample1",
+      "name": "정상 가져오기 테스트",
+      "createdAt": 1730000000000,
+      "updatedAt": 1730000000000,
+      "thumbnail": null,
+      "data": {
+        "imageDataUrl": null,
+        "ratio": "1:1",
+        "text": {
+          "content": "정상 JSON 가져오기 성공",
+          "enabled": true,
+          "xPct": 50,
+          "yPct": 50,
+          "size": 48,
+          "color": "#ffffff",
+          "strokeEnabled": true,
+          "strokeColor": "#000000"
+        },
+        "blur": { "type": "none", "intensity": 0, "direction": "up" }
+      }
+    }
+  ]
+}

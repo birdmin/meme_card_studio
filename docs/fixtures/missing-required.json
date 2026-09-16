@@ -1,0 +1,14 @@
+{
+  "exportedAt": 1730000000000,
+  "templates": [
+    {
+      "id": "t_missing",
+      "name": "필수 항목 누락 JSON",
+      "data": {
+        "ratio": "1:1",
+        "text": { "content": "size 항목이 없습니다", "xPct": 50, "yPct": 50, "color": "#ffffff" },
+        "blur": { "type": "none" }
+      }
+    }
+  ]
+}

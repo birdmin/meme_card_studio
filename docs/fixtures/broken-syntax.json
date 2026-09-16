@@ -1,0 +1,14 @@
+{
+  "exportedAt": 1730000000000,
+  "templates": [
+    {
+      "id": "t_broken",
+      "name": "문법 깨진 JSON",
+      "data": {
+        "ratio": "1:1",
+        "text": { "content": "이 줄 뒤에 괄호가 하나 빠졌습니다", "xPct": 50, "yPct": 50, "size": 40, "color": "#fff"
+        "blur": { "type": "none" }
+      }
+    }
+  ]
+}
