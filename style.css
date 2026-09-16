@@ -60,6 +60,7 @@ body {
   grid-template-columns: 300px 1fr 300px;
   gap: 0;
   min-height: calc(100vh - 96px);
+  align-items: start; /* 옆 패널이 길어져도 가운데 미리보기가 그 높이에 맞춰 아래로 밀리지 않게 함 */
 }
 
 @media (max-width: 1100px) {
@@ -256,9 +257,11 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
+  justify-content: flex-start; /* 세로 중앙정렬 대신 위쪽부터, 접속하자마자 바로 보이게 */
+  padding: 24px 24px 40px;
   gap: 16px;
+  position: sticky;
+  top: 0;
 }
 
 .stage-frame {
